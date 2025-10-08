@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyze X-ray - LungAI Detect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 1rem 5%;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #2563eb;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #1e3a8a;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .upload-area {
+            border: 2px dashed #2563eb;
+            border-radius: 10px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background-color: #f0f7ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .upload-button {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .upload-button:hover {
+            background-color: #1e40af;
+        }
+
+        /* Analysis Section */
+        .analysis-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .image-preview {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .preview-container {
+            aspect-ratio: 1;
+            background: #f8fafc;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .preview-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .results-panel {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .result-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .condition-name {
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 0.5rem;
+        }
+
+        .confidence-bar {
+            background: #e5e7eb;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .confidence-level {
+            height: 100%;
+            background: #2563eb;
+            border-radius: 5px;
+        }
+
+        .confidence-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .analysis-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">LungAI Detect</div>
+            <div class="nav-links">
+                <a href="lung-detection-landing.html">Home</a>
+                <a href="lung-detection-analyze.html">Analyze</a>
+                <a href="lung-detection-history.html">History</a>
+                <a href="lung-detection-settings.html">Settings</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="main-content">
+        <h1 class="page-title">Analyze X-ray Image</h1>
+
+        <form method="post" action="/upload" enctype="multipart/form-data" id="upload-form">
+  <div class="upload-section">
+    <div class="upload-area">
+      <div class="upload-icon">📤</div>
+      <input type="file" name="image" id="image" accept="image/*" required style="display:none;">
+      <button type="button" class="upload-button" onclick="document.getElementById('image').click();">Choose File</button>
+    </div>
+  </div>
+  <input type="submit" value="Upload Image" class="upload-button" style="margin-top:-15px; margin-left: 470px;">
+</form>
+
+<br>
+        <div class="analysis-section">
+            {% if top_preds  %}
+            <div class="image-preview">
+                <h2>Images Preview</h2>
+                <div class="preview-container"> 
+                    <div>
+                    <h4>Original Image</h4>   
+                    {% if image_url %}
+                    <img src="{{ image_url }}" alt="Uploaded Image" style="max-width: 200px;"/>
+                    {% endif %}
+                    <h4>{{ top_preds[0][0] }}</h4>   
+                    {% if images[0] %}
+                    <img src="{{ images[0] }}" alt="Uploaded Image" style="max-width: 200px;"/>
+                    {% endif %}
+                    <br><br>
+                </div>
+                    <div>
+                    <h4>{{ top_preds[1][0] }}</h4><br>   
+                    {% if images[1] %}
+                    <img src="{{ images[1] }}" alt="Uploaded Image" style="max-width: 200px;"/>
+                    {% endif %}
+                    <h4>{{ top_preds[2][0] }}</h4><br>  
+                    {% if images[2] %}
+                    <img src="{{ images[2] }}" alt="Uploaded Image" style="max-width: 200px;"/>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+        
+            
+            <div class="results-panel">
+                <h2>Analysis Results</h2>
+                <div class="result-item">
+                    <div class="condition-name">{{ top_preds[0][0] }}</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-level" style="width: {{ (top_preds[0][1] * 100) | round(2) }}%"></div>
+                    </div>
+                    <div class="confidence-text">{{ (top_preds[0][1] * 100) | round(2) }}% confidence</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="condition-name">{{ top_preds[1][0] }}</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-level" style="width: {{ (top_preds[1][1] * 100) | round(2) }}%"></div>
+                    </div>
+                    <div class="confidence-text">{{ (top_preds[1][1] * 100) | round(2) }}% confidence</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="condition-name">{{ top_preds[2][0] }}</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-level" style="width: {{ (top_preds[2][1] * 100) | round(2) }}%"></div>
+                    </div>
+                    <div class="confidence-text">{{ (top_preds[2][1] * 100) | round(2) }}% confidence</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+<script>
+  const inputFile = document.getElementById('image');
+  const chooseBtn = document.querySelector('.upload-button');
+  
+  inputFile.addEventListener('change', () => {
+    if (inputFile.files.length > 0) {
+      chooseBtn.textContent = inputFile.files[0].name;
+    } else {
+      chooseBtn.textContent = "Choose File";
+    }
+  });
+</script>

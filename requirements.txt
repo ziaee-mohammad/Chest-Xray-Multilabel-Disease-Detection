@@ -1,0 +1,9 @@
+jinja2
+fastapi
+pillow
+torch
+uvicorn
+pydantic
+torchvision
+torch
+matplotlib
